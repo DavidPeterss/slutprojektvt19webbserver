@@ -1,0 +1,17 @@
+-require_relative '../controller.rb'
+-require_relative '../app.rb'
+
+h1 Tom Clancy's The Division 2 wiki
+h4 Logged in as 
+
+form action="/post" method="POST"
+    input type="text" placeholder="Header" name="header"
+    input type="text" placeholder="Share your experiences" name="post"
+    button type="submit" value="publish" Publish
+
+
+    
+-bloggposts().each do |posts|
+    h2 = posts['Header']
+    p = posts['Post']
+    p = posts['Timestamp']

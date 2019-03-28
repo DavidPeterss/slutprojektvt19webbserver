@@ -1,3 +1,5 @@
+-require_relative '../controller.rb'
+
 h1 Welcome to The Division 2 wiki
 h3 Login
 a href="/register"Register
@@ -5,3 +7,9 @@ form action="/login" method="POST"
     input type="text" placeholder="Enter Username" name="username"
     input type="password" placeholder="Enter password" name="password"
     input type="submit" value="Submit"
+
+-bloggposts().each do |posts|
+    h2 = posts['Header']
+    p = posts['Post']
+    p = posts['Timestamp']
+
