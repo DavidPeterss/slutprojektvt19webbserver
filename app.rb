@@ -3,6 +3,7 @@ require 'sqlite3'
 require 'sinatra'
 require 'bcrypt'
 require 'byebug'
+require 'securerandom'
 require_relative './controller.rb'
 
 enable :sessions

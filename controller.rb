@@ -3,6 +3,7 @@ require 'sqlite3'
 require 'sinatra'
 require 'bcrypt'
 require 'byebug'
+require 'securerandom'
     
 def connect()
     db = SQLite3::Database.new("db/users.db")
@@ -30,5 +31,10 @@ end
 
 def post()
     db = connect()
-    db.execute("INSERT INTO bloggposts(Header, Post, UserId) VALUES(?, ?, ?)", params["header"], params["post"], session[:userId])
+    imgname = params["file"]
+    imgname = SecureRandom.uuid
+    db.execute("INSERT INTO bloggposts(Header, Post, UserId, Images) VALUES(?, ?, ?, ?)", params["header"], params["post"], session[:userId], imgname)
+    images = db.execute("SELECT Images FROM bloggposts WHERE UserId = ?", session[:userId])
+    return images
 end
+
