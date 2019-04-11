@@ -5,6 +5,7 @@ require 'bcrypt'
 require 'byebug'
 require 'securerandom'
 require_relative './controller.rb'
+require 'fileutils'
 
 enable :sessions
 
@@ -48,7 +49,16 @@ post('/login') do
     redirect('/loggedin')
 end
 
-post('/post') do
+#Uppladdning
+post('/upload') do
     post()
     redirect('/loggedin')
 end
+
+post('/logout') do
+    session.destroy
+    redirect('/')
+end
+
+# post('/like') do
+# end

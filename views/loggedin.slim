@@ -1,23 +1,29 @@
 -require_relative '../controller.rb'
 -require_relative '../app.rb'
+-session[:username] = params["username"]
 
+form action="/logout" method="POST"
+    button type="submit" value="logout"Logout
 
 h1 Tom Clancy's The Division 2ddit
-h2 Logged in as 
+h2 Logged in as #{session[:username]}
 
 
 
 h3 What do you want?
-form action="/post" method="POST"
+form action="/upload" method="POST" enctype="multipart/form-data"
     input type="text" placeholder="Header" name="header"
     input type="text" placeholder="Share your experiences" name="post"
-    input type="file" placeholder="File" name="file"
+    input type="file" placeholder="Select a file" name="file"
     button type="submit" value="publish" Publish
 
-
-
-    
+-#Printar bild respektive text för varje inlägg
 -bloggposts().each do |posts|
+    -if posts['Images'] != nil
+        img src="/img/#{posts['Images']}" height="250" width="300"
     h2 = posts['Header']
     p = posts['Post']
     p = posts['Timestamp']
+    / form action="/like" method="POST"
+    /     button type="submit" value="like"Like
+    
