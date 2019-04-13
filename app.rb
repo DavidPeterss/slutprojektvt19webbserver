@@ -60,5 +60,7 @@ post('/logout') do
     redirect('/')
 end
 
-# post('/like') do
-# end
+post('/like') do
+    likes_dislikes()
+    redirect('/loggedin')
+end

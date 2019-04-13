@@ -19,11 +19,15 @@ form action="/upload" method="POST" enctype="multipart/form-data"
 
 -#Printar bild respektive text för varje inlägg
 -bloggposts().each do |posts|
+    -db = connect()
     -if posts['Images'] != nil
         img src="/img/#{posts['Images']}" height="250" width="300"
     h2 = posts['Header']
     p = posts['Post']
     p = posts['Timestamp']
-    / form action="/like" method="POST"
-    /     button type="submit" value="like"Like
+    form action="/like" method="POST"
+        button type="submit" value="#{posts['Id']}" name="like" Nice meme
+        button type="submit" value="#{posts['Id']}" name="dislike" You're a cunt
+    p = posts['Likes']
+    p = posts['Dislikes']    
     

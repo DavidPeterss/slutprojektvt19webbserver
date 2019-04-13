@@ -32,17 +32,37 @@ end
 
 
 #Gör posts med bilder
+#Sätta PostId i likesdislikes mot postid i bloggposts, de behöver vara samma. 
+#Kanske göra uploadid som autoincrement och ta bort alla nuvarande inlägg, därav behöver jag endast lägga till session :userid
 def post()
     db = connect()
     img = params["file"]
+    id = db.execute("SELECT PostId FROM bloggposts WHERE UserId = ? ORDER BY PostId DESC LIMIT 1", session[:userId])
     if img != nil
     new_name = SecureRandom.uuid + ".jpg"
     FileUtils.copy(img["tempfile"], "./public/img/#{new_name}")
-    
         db.execute("INSERT INTO bloggposts(Header, Post, UserId, Images) VALUES(?, ?, ?, ?)", params["header"], params["post"], session[:userId], new_name) 
+        db.execute("INSERT INTO likesdislikes(UserId, UploadId) VALUES(?, ?)", session[:userId], id)
     else 
+        byebug
         db.execute("INSERT INTO bloggposts(Header, Post, UserId) VALUES(?, ?, ?)", params["header"], params["post"], session[:userId])
+        db.execute("INSERT INTO likesdislikes(UserId, UploadId) VALUES(?, ?)", session[:userId], id)
     end
+end
 
+def likes_dislikes()
+    db = connect()    
+    like_counter = 0
+    dislike_counter = 0
+    #db.execute("SELECT Id FROM bloggposts INNER JOIN likesdislikes ON bloggposts.PostId = likesdislikes.PostId")
+    if params["like"] != nil
+        like_counter += 1
+        byebug
+        db.execute("INSERT INTO likesdislikes(Likes) VALUES(?) WHERE Id ?", like_counter, params["like"])
+    elsif params["dislike"] != nil
+        dislike_counter += 1
+        byebug
+        db.execute("INSERT INTO bloggposts(Dislikes) VALUES(?) WHERE Id = ?", dislike_counter, params["dislike"])
+    end
 end
 
