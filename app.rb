@@ -16,7 +16,7 @@ end
 
 get('/loggedin') do
     bloggposts = bloggposts()
-    slim(:loggedin, locals:{bloggposts:bloggposts})
+    slim(:loggedin, locals:{bloggposts:bloggposts, username:session[:username]})
 end
 
 get('/register') do

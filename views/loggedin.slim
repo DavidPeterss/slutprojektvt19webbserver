@@ -6,7 +6,8 @@ form action="/logout" method="POST"
     button type="submit" value="logout"Logout
 
 h1 Tom Clancy's The Division 2ddit
-h2 Logged in as #{session[:username]}
+h2= "Logged in as " + username
+
 
 
 
@@ -19,15 +20,14 @@ form action="/upload" method="POST" enctype="multipart/form-data"
 
 -#Printar bild respektive text för varje inlägg
 -bloggposts().each do |posts|
-    -db = connect()
     -if posts['Images'] != nil
         img src="/img/#{posts['Images']}" height="250" width="300"
     h2 = posts['Header']
     p = posts['Post']
     p = posts['Timestamp']
     form action="/like" method="POST"
-        button type="submit" value="#{posts['Id']}" name="like" Nice meme
-        button type="submit" value="#{posts['Id']}" name="dislike" You're a cunt
-    p = posts['Likes']
-    p = posts['Dislikes']    
-    
+        button type="submit" value="#{posts['PostId']}" name="like" Nice meme
+        button type="submit" value="#{posts['PostId']}" name="dislike" You're a cunt    
+    -if posts['Likes'] != nil
+        p Likes:
+        p = posts['Likes']

@@ -37,32 +37,54 @@ end
 def post()
     db = connect()
     img = params["file"]
-    id = db.execute("SELECT PostId FROM bloggposts WHERE UserId = ? ORDER BY PostId DESC LIMIT 1", session[:userId])
+    # user = login()
+    # session[:userId] = user["Id"]
+
     if img != nil
     new_name = SecureRandom.uuid + ".jpg"
     FileUtils.copy(img["tempfile"], "./public/img/#{new_name}")
+
         db.execute("INSERT INTO bloggposts(Header, Post, UserId, Images) VALUES(?, ?, ?, ?)", params["header"], params["post"], session[:userId], new_name) 
-        db.execute("INSERT INTO likesdislikes(UserId, UploadId) VALUES(?, ?)", session[:userId], id)
+    
     else 
-        byebug
         db.execute("INSERT INTO bloggposts(Header, Post, UserId) VALUES(?, ?, ?)", params["header"], params["post"], session[:userId])
-        db.execute("INSERT INTO likesdislikes(UserId, UploadId) VALUES(?, ?)", session[:userId], id)
+
     end
+
 end
 
 def likes_dislikes()
-    db = connect()    
-    like_counter = 0
-    dislike_counter = 0
-    #db.execute("SELECT Id FROM bloggposts INNER JOIN likesdislikes ON bloggposts.PostId = likesdislikes.PostId")
-    if params["like"] != nil
-        like_counter += 1
-        byebug
-        db.execute("INSERT INTO likesdislikes(Likes) VALUES(?) WHERE Id ?", like_counter, params["like"])
-    elsif params["dislike"] != nil
-        dislike_counter += 1
-        byebug
-        db.execute("INSERT INTO bloggposts(Dislikes) VALUES(?) WHERE Id = ?", dislike_counter, params["dislike"])
+    db = connect()  
+
+    liked_posts = db.execute("SELECT UploadId FROM likesdislikes WHERE UserId = ?", session[:userId])
+    
+    liked = false
+    liked_posts.each do |post|
+        if post["UploadId"] == params["like"].to_i || post["UploadId"] == params["dislike"].to_i
+            liked = true
+            break
+        end
+    end
+
+    if liked == false
+        if params["like"] != nil
+            has_liked = 1
+            db.execute("INSERT INTO likesdislikes(UploadId, UserId) VALUES(?, ?)", params["like"], session[:userId])
+            postid = params['like']
+        else
+            has_liked = -1
+            db.execute("INSERT INTO likesdislikes(UploadId, UserId) VALUES(?, ?)", params["dislike"], session[:userId])
+            postid = params['dislike']
+        end
+        
+        like_counter = db.execute("SELECT Likes FROM bloggposts WHERE PostId = ?", postid).first["Likes"]
+        
+        if like_counter == nil
+            like_counter = 0
+        end
+        like_counter += has_liked
+
+        db.execute("UPDATE bloggposts SET Likes = ? WHERE PostId = ?", like_counter, postid)
     end
 end
 
