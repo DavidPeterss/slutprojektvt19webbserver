@@ -5,6 +5,7 @@ require 'bcrypt'
 require 'byebug'
 require 'securerandom'
 require 'fileutils'
+
     
 def connect()
     db = SQLite3::Database.new("db/users.db")
@@ -27,22 +28,26 @@ end
 def register()
     db = connect()
     hashed_pass = BCrypt::Password.create(params["password"])
-    db.execute("INSERT INTO users(Username, Password) VALUES(?, ?)", params["username"], hashed_pass)
+    if db.execute("SELECT Username FROM users WHERE Username = ?", params["username"]).first
+        redirect('/failedregister')
+    else
+        db.execute("INSERT INTO users(Username, Password) VALUES(?, ?)", params["username"], hashed_pass)
+    end
 end
 
-
-#Gör posts med bilder
-#Sätta PostId i likesdislikes mot postid i bloggposts, de behöver vara samma. 
-#Kanske göra uploadid som autoincrement och ta bort alla nuvarande inlägg, därav behöver jag endast lägga till session :userid
 def post()
     db = connect()
+    if params["publish"] != nil
+        if params["header"].length == 0 || params["post"].length == 0
+            return 
+        end 
+
+    end
     img = params["file"]
-    # user = login()
-    # session[:userId] = user["Id"]
 
     if img != nil
-    new_name = SecureRandom.uuid + ".jpg"
-    FileUtils.copy(img["tempfile"], "./public/img/#{new_name}")
+        new_name = SecureRandom.uuid + ".jpg"
+        FileUtils.copy(img["tempfile"], "./public/img/#{new_name}")
 
         db.execute("INSERT INTO bloggposts(Header, Post, UserId, Images) VALUES(?, ?, ?, ?)", params["header"], params["post"], session[:userId], new_name) 
     
@@ -88,3 +93,19 @@ def likes_dislikes()
     end
 end
 
+def verif()
+    db = connect()
+    verification = db.execute("SELECT Username, Password FROM users WHERE Id = ?", session[:userId])
+    if verification['Username'] == params["username"]
+        if verification['Password'] == params["password"]
+            
+        end
+    end
+
+end
+
+def del_post()
+    db = connect() 
+    db.execute("DELETE FROM bloggposts WHERE PostId = ?", params["delete"])
+    db.execute("DELETE FROM likesdislikes WHERE UploadId = ?", params["delete"])
+end

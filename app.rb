@@ -4,10 +4,16 @@ require 'sinatra'
 require 'bcrypt'
 require 'byebug'
 require 'securerandom'
-require_relative './controller.rb'
+require_relative './model.rb'
 require 'fileutils'
 
 enable :sessions
+
+before do 
+    if request.path != '/' && request.path != '/login' && request.path != '/failed' && request.path != '/register' && session[:userId] == nil
+        redirect('/failed')
+    end
+end
 
 get('/') do
     bloggposts = bloggposts()
@@ -25,6 +31,14 @@ end
 
 get('/failed') do
     slim(:failed)
+end
+
+get('/editprofile') do
+    slim(:editprofile)
+end
+
+get('/failedregister') do 
+    slim(:failedregister)
 end
 
 post('/register') do
@@ -63,4 +77,18 @@ end
 post('/like') do
     likes_dislikes()
     redirect('/loggedin')
+end
+
+post('/editpro') do
+    redirect('/editprofile')
+end
+
+post('/del') do 
+    del_post()
+    redirect('/loggedin')
+end
+
+
+error 404 do
+    redirect('/failed')
 end
