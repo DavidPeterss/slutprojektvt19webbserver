@@ -15,7 +15,12 @@ end
 
 def bloggposts()
     db = connect()
-    posts = db.execute("SELECT * FROM bloggposts ORDER BY Timestamp DESC LIMIT 20")
+    
+    if likes == nil || dislikes == nil
+        posts = db.execute("SELECT * FROM bloggposts ORDER BY TIMESTAMP DESC LIMIT 20")
+    else
+        posts = db.execute("SELECT Header, Post, PostId, bloggposts.UserId, Images, likesdislikes.type FROM bloggposts INNER JOIN likesdislikes ON likesdislikes.UploadId = bloggposts.PostId ORDER BY TIMESTAMP DESC LIMIT 20")
+    end
     return posts
 end
 
@@ -68,40 +73,38 @@ def likes_dislikes()
         if post["UploadId"] == params["like"].to_i || post["UploadId"] == params["dislike"].to_i
             liked = true
             break
+        elsif post["UploadId"] == nil
+            redirect('/failed')
         end
     end
+
 
     if liked == false
         if params["like"] != nil
             has_liked = 1
-            db.execute("INSERT INTO likesdislikes(UploadId, UserId) VALUES(?, ?)", params["like"], session[:userId])
-            postid = params['like']
-        else
+            db.execute("INSERT INTO likesdislikes(UploadId, UserId, type) VALUES(?, ?, ?)", params["like"], session[:userId], has_liked)
+            postid = params["like"]
+        elsif params["dislike"] != nil
             has_liked = -1
-            db.execute("INSERT INTO likesdislikes(UploadId, UserId) VALUES(?, ?)", params["dislike"], session[:userId])
-            postid = params['dislike']
+            db.execute("INSERT INTO likesdislikes(UploadId, UserId, type) VALUES(?, ?, ?)", params["dislike"], session[:userId], has_liked)
+            postid = params["dislike"]
+        else
+            redirect('/failed')
         end
-        
-        like_counter = db.execute("SELECT Likes FROM bloggposts WHERE PostId = ?", postid).first["Likes"]
-        
-        if like_counter == nil
-            like_counter = 0
-        end
-        like_counter += has_liked
-
-        db.execute("UPDATE bloggposts SET Likes = ? WHERE PostId = ?", like_counter, postid)
     end
+
 end
 
-def verif()
+def updatepro()
     db = connect()
-    verification = db.execute("SELECT Username, Password FROM users WHERE Id = ?", session[:userId])
-    if verification['Username'] == params["username"]
-        if verification['Password'] == params["password"]
-            
+    if params["profilechange"] != nil
+        if db.execute("SELECT Username FROM users WHERE Username = ?", params["username"]).first
+            redirect('/failedregister')
+        else
+            hashed_pass = BCrypt::Password.create(params["new_pass"])
+            db.execute("UPDATE users SET Username = ?, Password = ? WHERE Id = ?", params["new_name"], hashed_pass, session[:userId])
         end
     end
-
 end
 
 def del_post()

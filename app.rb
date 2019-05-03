@@ -41,6 +41,10 @@ get('/failedregister') do
     slim(:failedregister)
 end
 
+get('/change_details') do 
+    sim(:change_details)
+end
+
 post('/register') do
     register()
     redirect('/')
@@ -80,6 +84,7 @@ post('/like') do
 end
 
 post('/editpro') do
+    updatepro()
     redirect('/editprofile')
 end
 

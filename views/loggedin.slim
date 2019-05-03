@@ -6,7 +6,7 @@ form action="/logout" method="POST"
     button type="submit" value="logout"Logout
 
 h1 Tom Clancy's The Division 2ddit
-h2= "Logged in as " + username.to_s
+h2= "Logged in as" + " " + username.to_s 
 
 form action="/editpro" method="POST" 
     button type="submit" value="editprofile" Edit profile
@@ -30,15 +30,15 @@ form action="/upload" method="POST" enctype="multipart/form-data"
 
     form action="/like" method="POST"
         button type="submit" value="#{posts['PostId']}" name="like" Nice meme
-        button type="submit" value="#{posts['PostId']}" name="dislike" You're a cunt 
+        button type="submit" value="#{posts['PostId']}" name="dislike" You're a weeb
 
 
     -if posts['UserId'] == session[:userId]
         form action="/del" method="POST"
             button type="submit" value="#{posts['PostId']}" name="delete"Delete
 
-    -if posts['Likes'] != nil
+    -if posts['score'] != nil || posts['score'] != 0
         p Votes:
-        p = posts['Likes']
+        p = posts['score']
 
     

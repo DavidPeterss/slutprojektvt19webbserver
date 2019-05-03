@@ -8,7 +8,7 @@ form action="/login" method="POST"
     input type="password" placeholder="Enter password" name="password"
     input type="submit" value="Submit"
 
--bloggposts().each do |posts|
+-bloggposts.each do |posts|
     -if posts['Images'] != nil
         img src="/img/#{posts['Images']}" height="250" width="300"
     h2 = posts['Header']
