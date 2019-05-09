@@ -13,18 +13,19 @@ def connect()
     return db
 end
 
-def bloggposts()
+def bloggposts(params)
     db = connect()
-    
+    likes = db.execute("SELECT SUM(DISTINCT type) FROM likesdislikes WHERE UploadId = ?", params["like"])
+    dislikes = db.execute("SELECT SUM(DISTINCT type) FROM likesdislikes WHERE UploadId = ?", params["dislike"])
     if likes == nil || dislikes == nil
         posts = db.execute("SELECT * FROM bloggposts ORDER BY TIMESTAMP DESC LIMIT 20")
     else
-        posts = db.execute("SELECT Header, Post, PostId, bloggposts.UserId, Images, likesdislikes.type FROM bloggposts INNER JOIN likesdislikes ON likesdislikes.UploadId = bloggposts.PostId ORDER BY TIMESTAMP DESC LIMIT 20")
+        posts = db.execute("SELECT Header, Post, PostId, bloggposts.UserId, Images, SUM(DISTINCT likesdislikes.type) AS score FROM bloggposts INNER JOIN likesdislikes ON likesdislikes.UploadId = bloggposts.PostId  WHERE likesdislikes.UploadId = ? ORDER BY TIMESTAMP DESC LIMIT 20", params["like"])
     end
     return posts
 end
 
-def login()
+def login(params)
     db = connect()
     result = db.execute("SELECT Id, Password FROM users WHERE Username = ?", params["username"])
     return result.first
