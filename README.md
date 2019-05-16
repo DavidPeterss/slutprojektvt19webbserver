@@ -7,7 +7,6 @@ Visionen och målet med uppgiften är att skapa en slags "wikihow" för spelet t
 Startsida: Visar namnet på webbsidan, inloggningsfält samt en länk till registrerings sida. Under allting finns de posts som nyligen lagts upp av andra användare, kan endast se vilka inlägg det är, men kan ej interagera med dessa inlägg (Kan man göra som inloggad, förklarar det längre ner). Registrering: Välj användarnamn och lösenord, vid submit, kommer man tillbaka till inloggningssidan d.v.s. startsidan. 
 Logged in: ser man alla de nyaste postsen samtidigt som man själv har möjlighet att göra inlägg, gilla, ogilla och kommentera andras inlägg. Profil: Redigera användarnamn och byta lösenord. ev. kunna välja en profilbild. Failed login: Misslyckad login med länk tillbaka till startsidan. 
 ## 3. Funktionalitet (med sekvensdiagram)
-Fuckoff (förlåt jag menade det inte snälla ge mig ett betyg)
 ## 4. Arkitektur (Beskriv filer och mappar)
 DB mapp: mappen där databasen är lagrad.
 Public: img mapp: Lagrar alla bilder som användare lägger upp, ligger i public för att de skall vara tillgängliga för alla. 
