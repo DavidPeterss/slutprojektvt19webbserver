@@ -7,9 +7,20 @@ require 'securerandom'
 require_relative './model.rb'
 require 'fileutils'
 
+helpers do
+    def get_error()
+        error = session[:msg].dup
+        session[:msg] = nil
+        return error
+    end
+
+    def error?
+        !session[:msg].nil?
+    end
+end
 enable :sessions
 
-# Checks which paths a non-user is allowed to visit and redirects to '/failed' if the user is authorized to be in a certain path
+# Checks which paths a non-user is allowed to visit and redirects to '/failed' if the user is unauthorized to be in a certain path
 #
 before do 
     if request.path != '/' && request.path != '/login' && request.path != '/failed' && request.path != '/register' && session[:userId] == nil
@@ -62,7 +73,7 @@ end
 
 
 post('/register') do
-    register()
+    register(params)
     redirect('/')
 end
 
@@ -91,7 +102,11 @@ end
 
 # Uppladdning
 post('/upload') do
-    post()
+    res = post(params, session)
+
+    if res[:error] == true
+        session[:msg] = res[:message]
+    end
     redirect('/loggedin')
 end
 
@@ -101,20 +116,25 @@ post('/logout') do
 end
 
 post('/like') do
-    likes_dislikes()
+    likes_dislikes(params, session)
     redirect('/loggedin')
 end
 
 post('/editpro') do
-    updatepro()
-    redirect('/editprofile')
+    if session['userId'] != nil
+        updatepro(params, session)
+        redirect('/editprofile')
+    end
 end
-
+#gör errormeddelanden istället
 post('/del') do 
-    del_post()
-    redirect('/loggedin')
+    if session['userId'] != nil
+        del_post(params)
+        redirect('/loggedin')
+    else
+        redirect('/failed')
+    end
 end
-
 
 error 404 do
     redirect('/failed')

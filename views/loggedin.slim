@@ -15,6 +15,8 @@ form action="/editpro" method="POST"
 
 h3 What do you want?
 form action="/upload" method="POST" enctype="multipart/form-data"
+    -if error?
+        p.error = get_error()
     input type="text" placeholder="Header" name="header"
     input type="text" placeholder="Share your experiences" name="post"
     input type="file" placeholder="Select a file" name="file"

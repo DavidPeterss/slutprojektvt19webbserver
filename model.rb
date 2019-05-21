@@ -15,12 +15,16 @@ end
 
 def bloggposts(params)
     db = connect()
-    likes = db.execute("SELECT SUM(DISTINCT type) FROM likesdislikes WHERE UploadId = ?", params["like"])
-    dislikes = db.execute("SELECT SUM(DISTINCT type) FROM likesdislikes WHERE UploadId = ?", params["dislike"])
-    if likes == nil || dislikes == nil
+    likes = db.execute("SELECT SUM(type) AS score FROM likesdislikes WHERE UploadId = ?", params["like"])
+    dislikes = db.execute("SELECT SUM(type) AS score FROM likesdislikes WHERE UploadId = ?", params["dislike"])
+    if likes.first["score"] == nil || dislikes.first["score"] == nil
         posts = db.execute("SELECT * FROM bloggposts ORDER BY TIMESTAMP DESC LIMIT 20")
+        byebug
+    elsif likes.first["score"] != nil
+        posts = db.execute("SELECT Header, Post, PostId, bloggposts.UserId, Images, SUM(likesdislikes.type) AS score FROM bloggposts INNER JOIN likesdislikes ON likesdislikes.UploadId = bloggposts.PostId  WHERE likesdislikes.UploadId = ? ORDER BY TIMESTAMP DESC LIMIT 20", params["like"])
+        byebug
     else
-        posts = db.execute("SELECT Header, Post, PostId, bloggposts.UserId, Images, SUM(DISTINCT likesdislikes.type) AS score FROM bloggposts INNER JOIN likesdislikes ON likesdislikes.UploadId = bloggposts.PostId  WHERE likesdislikes.UploadId = ? ORDER BY TIMESTAMP DESC LIMIT 20", params["like"])
+        posts = db.execute("SELECT Header, Post, PostId, bloggposts.UserId, Images, SUM(likesdislikes.type) AS score FROM bloggposts INNER JOIN likesdislikes ON likesdislikes.UploadId = bloggposts.PostId  WHERE likesdislikes.UploadId = ? ORDER BY TIMESTAMP DESC LIMIT 20", params["dislike"])
     end
     return posts
 end
@@ -31,7 +35,7 @@ def login(params)
     return result.first
 end
 
-def register()
+def register(params)
     db = connect()
     hashed_pass = BCrypt::Password.create(params["password"])
     if db.execute("SELECT Username FROM users WHERE Username = ?", params["username"]).first
@@ -41,11 +45,14 @@ def register()
     end
 end
 
-def post()
+def post(params, session)
     db = connect()
     if params["publish"] != nil
         if params["header"].length == 0 || params["post"].length == 0
-            return 
+            return {
+                error: true,
+                message: "Something went wrong while uploading, please try again"
+            }
         end 
 
     end
@@ -55,19 +62,23 @@ def post()
         new_name = SecureRandom.uuid + ".jpg"
         FileUtils.copy(img["tempfile"], "./public/img/#{new_name}")
 
-        db.execute("INSERT INTO bloggposts(Header, Post, UserId, Images) VALUES(?, ?, ?, ?)", params["header"], params["post"], session[:userId], new_name) 
-    
+        db.execute("INSERT INTO bloggposts(Header, Post, UserId, Images) VALUES(?, ?, ?, ?)", params["header"], params["post"], session['userId'], new_name) 
+        return {
+            error: false
+        }
     else 
-        db.execute("INSERT INTO bloggposts(Header, Post, UserId) VALUES(?, ?, ?)", params["header"], params["post"], session[:userId])
-
+        db.execute("INSERT INTO bloggposts(Header, Post, UserId) VALUES(?, ?, ?)", params["header"], params["post"], session['userId'])
+        return {
+            error: false
+        }
     end
 
 end
 
-def likes_dislikes()
+def likes_dislikes(params, session)
     db = connect()  
 
-    liked_posts = db.execute("SELECT UploadId FROM likesdislikes WHERE UserId = ?", session[:userId])
+    liked_posts = db.execute("SELECT UploadId FROM likesdislikes WHERE UserId = ?", session['userId'])
     
     liked = false
     liked_posts.each do |post|
@@ -83,11 +94,11 @@ def likes_dislikes()
     if liked == false
         if params["like"] != nil
             has_liked = 1
-            db.execute("INSERT INTO likesdislikes(UploadId, UserId, type) VALUES(?, ?, ?)", params["like"], session[:userId], has_liked)
+            db.execute("INSERT INTO likesdislikes(UploadId, UserId, type) VALUES(?, ?, ?)", params["like"], session['userId'], has_liked)
             postid = params["like"]
         elsif params["dislike"] != nil
             has_liked = -1
-            db.execute("INSERT INTO likesdislikes(UploadId, UserId, type) VALUES(?, ?, ?)", params["dislike"], session[:userId], has_liked)
+            db.execute("INSERT INTO likesdislikes(UploadId, UserId, type) VALUES(?, ?, ?)", params["dislike"], session['userId'], has_liked)
             postid = params["dislike"]
         else
             redirect('/failed')
@@ -96,19 +107,21 @@ def likes_dislikes()
 
 end
 
-def updatepro()
+#validering
+def updatepro(params, session)
     db = connect()
     if params["profilechange"] != nil
         if db.execute("SELECT Username FROM users WHERE Username = ?", params["username"]).first
             redirect('/failedregister')
         else
             hashed_pass = BCrypt::Password.create(params["new_pass"])
-            db.execute("UPDATE users SET Username = ?, Password = ? WHERE Id = ?", params["new_name"], hashed_pass, session[:userId])
+            db.execute("UPDATE users SET Username = ?, Password = ? WHERE Id = ?", params["new_name"], hashed_pass, session['userId'])
         end
     end
 end
 
-def del_post()
+#validering
+def del_post(params)
     db = connect() 
     db.execute("DELETE FROM bloggposts WHERE PostId = ?", params["delete"])
     db.execute("DELETE FROM likesdislikes WHERE UploadId = ?", params["delete"])
