@@ -19,10 +19,8 @@ def bloggposts(params)
     dislikes = db.execute("SELECT SUM(type) AS score FROM likesdislikes WHERE UploadId = ?", params["dislike"])
     if likes.first["score"] == nil || dislikes.first["score"] == nil
         posts = db.execute("SELECT * FROM bloggposts ORDER BY TIMESTAMP DESC LIMIT 20")
-        byebug
     elsif likes.first["score"] != nil
         posts = db.execute("SELECT Header, Post, PostId, bloggposts.UserId, Images, SUM(likesdislikes.type) AS score FROM bloggposts INNER JOIN likesdislikes ON likesdislikes.UploadId = bloggposts.PostId  WHERE likesdislikes.UploadId = ? ORDER BY TIMESTAMP DESC LIMIT 20", params["like"])
-        byebug
     else
         posts = db.execute("SELECT Header, Post, PostId, bloggposts.UserId, Images, SUM(likesdislikes.type) AS score FROM bloggposts INNER JOIN likesdislikes ON likesdislikes.UploadId = bloggposts.PostId  WHERE likesdislikes.UploadId = ? ORDER BY TIMESTAMP DESC LIMIT 20", params["dislike"])
     end
@@ -105,6 +103,22 @@ def likes_dislikes(params, session)
         end
     end
 
+end
+
+def count_likes()
+    db = connect()
+    votes = db.execute("SELECT * FROM likesdislikes ORDER BY UploadId")
+    
+    id = votes[0][1]
+    likes = {votes[0][1]=>0}
+    votes.each do |vote|
+        if id != vote[1]
+            id = vote[1]
+            likes[vote[1]] = 0
+        end
+        likes[vote[1]] += vote[2].to_i
+    end
+    return likes
 end
 
 #validering

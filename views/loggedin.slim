@@ -23,6 +23,7 @@ form action="/upload" method="POST" enctype="multipart/form-data"
     button type="submit" value="publish" name="publish" Publish
 
 -#Printar bild respektive text för varje inlägg
+
 -bloggposts.each do |posts|
     -if posts['Images'] != nil
         img src="/img/#{posts['Images']}" height="250" width="300"
@@ -38,9 +39,8 @@ form action="/upload" method="POST" enctype="multipart/form-data"
     -if posts['UserId'] == session[:userId]
         form action="/del" method="POST"
             button type="submit" value="#{posts['PostId']}" name="delete"Delete
+    
 
-    -if posts['score'] != nil || posts['score'] != 0
-        p Votes:
-        p = posts['score']
+    p = likes[posts['PostId']]
 
     

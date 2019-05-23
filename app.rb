@@ -44,7 +44,8 @@ end
 # @see Model#bloggposts
 get('/loggedin') do
     bloggposts = bloggposts(params)
-    slim(:loggedin, locals:{bloggposts:bloggposts, username:session[:username]})
+    likes = count_likes()
+    slim(:loggedin, locals:{bloggposts:bloggposts, username:session[:username], likes:likes})
 end
 
 #Displays register page
@@ -116,7 +117,7 @@ post('/logout') do
 end
 
 post('/like') do
-    likes_dislikes(params, session)
+    likes_dislikes(params, session) 
     redirect('/loggedin')
 end
 
