@@ -117,15 +117,22 @@ post('/logout') do
 end
 
 post('/like') do
-    likes_dislikes(params, session) 
-    redirect('/loggedin')
+    if session['userId'] != nil
+        likes_dislikes(params, session) 
+        redirect('/loggedin')
+    end
 end
 
 post('/editpro') do
+    res = updatepro(params, session)
+    if res[:error] == true
+        session[:msg] = res[:message]
+    end
+
     if session['userId'] != nil
         updatepro(params, session)
-        redirect('/editprofile')
     end
+    redirect('/editprofile')
 end
 #gör errormeddelanden istället
 post('/del') do 

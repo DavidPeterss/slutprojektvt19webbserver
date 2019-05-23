@@ -33,6 +33,7 @@ def login(params)
     return result.first
 end
 
+#validera t.ex. antal tecken så man inte kan slänga in en hel artikel i parametrarna
 def register(params)
     db = connect()
     hashed_pass = BCrypt::Password.create(params["password"])
@@ -125,18 +126,33 @@ end
 def updatepro(params, session)
     db = connect()
     if params["profilechange"] != nil
-        if db.execute("SELECT Username FROM users WHERE Username = ?", params["username"]).first
-            redirect('/failedregister')
+        user = db.execute("SELECT Username FROM users WHERE Username = ?", params["new_name"])
+        if user.length > 0
+            return {
+                error: true, 
+                message: "That username is already in use"
+            }
         else
             hashed_pass = BCrypt::Password.create(params["new_pass"])
             db.execute("UPDATE users SET Username = ?, Password = ? WHERE Id = ?", params["new_name"], hashed_pass, session['userId'])
+            return {
+                error: false
+            }
         end
+    else
+        return {
+            error: false
+        }
     end
 end
 
 #validering
 def del_post(params)
     db = connect() 
-    db.execute("DELETE FROM bloggposts WHERE PostId = ?", params["delete"])
-    db.execute("DELETE FROM likesdislikes WHERE UploadId = ?", params["delete"])
+    userId = db.execute("SELECT UserId FROM bloggposts WHERE UserId = ?", session['userId'])
+    byebug
+    if userId.first[0] == session['userId']
+        db.execute("DELETE FROM bloggposts WHERE PostId = ?", params["delete"])
+        db.execute("DELETE FROM likesdislikes WHERE UploadId = ?", params["delete"])
+    end
 end
