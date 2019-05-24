@@ -7,6 +7,8 @@ require 'securerandom'
 require_relative './model.rb'
 require 'fileutils'
 
+# Displays an error message
+#
 helpers do
     def get_error()
         error = session[:msg].dup
@@ -66,44 +68,45 @@ get('/editprofile') do
     slim(:editprofile)
 end
 
-# Displays failed register when selected username already exists
+# Attempts register and redirects to index page if successful
+# @param [String] password, The password
+# @param [String] username, The username
 #
-get('/failedregister') do 
-    slim(:failedregister)
-end
-
-
+# @see Model#register
 post('/register') do
-    register(params)
+    res = register(params)
+    if res[:error] == true
+        session[:msg] = res[:message]
+        return redirect('/register')
+    end
     redirect('/')
 end
 
-# Checks if username and password correspond with a signed up user in the database and redirects to '/loggedin' if successful and '/failed' if the credentials are incorrect
+# Attempts login and updates session
 #
 # @param [String] username, Username of current user  
 # @param [String] password, Password of current user
 #
 # @see Model#login
 post('/login') do 
-    user = login(params)
+    res = login(params)
 
-    if user == nil
-        redirect('/failed')
-    end
-    hashed_pass = BCrypt::Password.new(user["Password"])
-
-    if hashed_pass == params["password"]
-        session[:username] = params["username"]
-        session[:userId] = user["Id"]
-    else
-        redirect('/failed')
+    if res[:error] == true
+        session[:msg] = res[:message]
+        return redirect('/')
     end
     redirect('/loggedin')
 end
 
-# Uppladdning
+# All information about to be posted to the website gets inserted to the database through this function.
+#
+# @param [Button] publish, Button that user pushes when ready to publish
+# @param [String] header, Header of the actual post
+# @param [String] post, larger text under the header of the post
+#
+# @see Model#post
 post('/upload') do
-    res = post(params, session)
+    res = post(params, userId)
 
     if res[:error] == true
         session[:msg] = res[:message]
@@ -111,39 +114,70 @@ post('/upload') do
     redirect('/loggedin')
 end
 
+# If logout button is pushed the session is destroyed and the user is directed back to the index page
+#
 post('/logout') do
     session.destroy
     redirect('/')
 end
 
+# Attempts to like or dislike a post
+#
+# @param [Integer] like, Id of the post which has been liked
+# @param [Integer] dislike, Id of the post which has been disliked
+#
+# @see Model#likes_dislikes
 post('/like') do
-    if session['userId'] != nil
-        likes_dislikes(params, session) 
-        redirect('/loggedin')
-    end
-end
+    res = likes_dislikes(params, userId)
 
-post('/editpro') do
-    res = updatepro(params, session)
     if res[:error] == true
         session[:msg] = res[:message]
     end
 
     if session['userId'] != nil
-        updatepro(params, session)
-    end
-    redirect('/editprofile')
-end
-#gör errormeddelanden istället
-post('/del') do 
-    if session['userId'] != nil
-        del_post(params)
+        likes_dislikes(params, userId) 
         redirect('/loggedin')
-    else
-        redirect('/failed')
     end
 end
 
+# Attempts to update the users credentials (Username, and password)
+#
+# @param [Button] profilechange, Button pressed when the user is ready to change credentials
+# @param [String] new_name, New username
+# @param [String] new_pass, New password
+#
+# @see Model#updatepro
+post('/editpro') do
+    res = updatepro(params, userId)
+    if res[:error] == true
+        session[:msg] = res[:message]
+    end
+
+    if session['userId'] != nil
+        updatepro(params, userId)
+    end
+    redirect('/editprofile')
+end
+
+# Deletes current users post
+#
+# @param [Button] delete, Delete button
+#
+# @see Model#del_post
+post('/del') do 
+    res = del_post(params, userId)
+    if res[:error] == true
+        session[:msg] = res[:message]
+    end
+
+    if session['userId'] != nil
+        del_post(params, userId)
+    end
+    redirect('/loggedin')
+end
+
+# Redirects to failed page if site crashes
+#
 error 404 do
     redirect('/failed')
 end

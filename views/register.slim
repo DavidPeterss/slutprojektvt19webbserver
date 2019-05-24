@@ -1,6 +1,9 @@
 h1 Reggie to experience the full website
+h2 Maximum of 20 characters
 
 form action="/register" method="POST"
+    -if error?
+        p.error = get_error()
     input type="text" placeholder="Enter Username" name="username"
     input type="password" placeholder="Enter Password" name="password"
     input type="submit" value="Submit"

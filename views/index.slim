@@ -4,6 +4,8 @@ h1 Welcome to Tom Clancy's The Division 2ddit
 h3 Login
 a href="/register"Register
 form action="/login" method="POST"
+    -if error?
+        p.error = get_error()
     input type="text" placeholder="Enter Username" name="username"
     input type="password" placeholder="Enter password" name="password"
     input type="submit" value="Submit"
@@ -14,4 +16,3 @@ form action="/login" method="POST"
     h2 = posts['Header']
     p = posts['Post']
     p = posts['Timestamp']
-
