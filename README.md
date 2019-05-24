@@ -20,3 +20,4 @@ Model: connect funktionen är funktionen där jag skapar en variabel som öppnar
 I övrigt är det här jag gör funktionerna där jag kan lägga ut posts med bilder som därmed också går att ta bort, gilla och ogilla. Dessutom kan man byta inloggningsuppgifter.
 
 ## 5. (Databas med ER-diagram)
+Ligger i classroom
